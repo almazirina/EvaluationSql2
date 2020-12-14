@@ -84,3 +84,52 @@ UPDATE commander_articles
 SET INSERT INTO(codart, qte, date) VALUES (tr_codart, tr_qte, now())
 WHERE products.pro_stock_alert > new.pro_stock;
 END |
+
+
+/* Programmer des transactions */
+
+START TRANSACTION;
+INSERT INTO posts(pos_id, pos_libelle) VALUES (36, 'Retraite'); --ajouter une ligne dans la table posts pour référencer les employés à la retraite
+
+select * from employees where employees.emp_lastname='HANNAH';
+
+UPDATE employees SET emp_pos_id=36 where emp_lastname='HANNAH' and emp_firstname='Amity'; --Amity HANAH est partie en retraite
+
+SELECT emp_lastname, emp_firstname, MIN(emp_enter_date) from employees -- on cherche le pépiniériste le plus ancien en poste dans magasin d'Arras
+join posts on posts.pos_id=employees.emp_pos_id
+join shops on sho_id=emp_sho_id
+where posts.pos_libelle='pépiniériste' and
+sho_city='Arras'
+group by emp_enter_date  --son prenom est 'HILLARY'
+limit 1;
+
+update employees set emp_salary=emp_salary*1.05, emp_pos_id=(
+    select pos_id from posts where pos_libelle like 'Manag%')
+    where emp_lastname='HILLARY';  --on lui update salaire et post
+
+SELECT * from employees  -- on verifie si la requette precedant ete bien realise
+join posts on posts.pos_id=employees.emp_pos_id
+join shops on sho_id=emp_sho_id
+where posts.pos_libelle LIKE 'Manag%' and -- et on voit que son emp_id=10
+sho_city='Arras';
+
+SELECT * from employees   -- on chereche les anciens collègues pépiniéristes du M.HILLARY
+join posts on posts.pos_id=employees.emp_pos_id
+join shops on sho_id=emp_sho_id
+where posts.pos_libelle='pépiniériste' and
+sho_city='Arras';   -- ces id sont 20,44,57,103
+
+UPDATE employees
+SET emp_superior_id=10  --les anciens collègues pépiniéristes du M.HILLARY passent sous sa direction.
+WHERE emp_id=20;
+UPDATE employees
+SET emp_superior_id=10
+WHERE emp_id=44;
+UPDATE employees
+SET emp_superior_id=10
+WHERE emp_id=57;
+UPDATE employees
+SET emp_superior_id=10
+WHERE emp_id=103;
+
+COMMIT;  -- on enregistre les modifications.
